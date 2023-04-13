@@ -28,6 +28,8 @@ import { useApproval, useChainId } from '@/hooks'
 import { getContractAddress } from '@/utils/contractAddresses'
 import { Approve } from '../Approve'
 import { ethers } from 'ethers'
+import PushChat from '../Push/Chat'
+import ChatModal from './ChatModal'
 
 interface Props {
   id: number
@@ -87,7 +89,7 @@ const MintTicket: React.FC<Props> = ({ id, item, imageOnly, ...props }) => {
   const { isStart, ...countDown } = useCountdown()
 
   const creatorName =
-    item?.tokenURIJSON?.attributes.length > 0
+    item?.tokenURIJSON?.attributes?.length > 0
       ? item?.tokenURIJSON?.attributes.reduce((text, attribute) => {
           const currentText =
             attribute?.trait_type === 'CreatorName' ? attribute.value : ''
@@ -166,31 +168,33 @@ const MintTicket: React.FC<Props> = ({ id, item, imageOnly, ...props }) => {
         {!imageOnly && (
           <GridItem>
             <Box mb={{ lg: 10 }}>
-              {blockTimeStamp.salesStatus !== 1 ? (
-                <Box mt={{ base: 5 }}>
-                  <Heading size="md">
-                    {blockTimeStamp.salesStatus === 0 && (
-                      <Text>{t('TITLE.BEFORE_SALE')}</Text>
-                    )}
-                    {blockTimeStamp.salesStatus === 2 && (
-                      <Text>{t('TITLE.END_OF_SALE')}</Text>
-                    )}
-                  </Heading>
-                </Box>
-              ) : (
-                <>
-                  {(mintState.status === 'minted' || isHolding) && (
-                    <Box>
-                      <Text>{t('TITLE.MINTED')}</Text>
-                    </Box>
-                  )}
-                  {mintState.status === 'noMintable' && (
-                    <Text>{t('TITLE.NOT_MINTABLE')}</Text>
-                  )}
-                  {mintState.status === 'soldout' && (
-                    <Text>{t('TITLE.SOLD_OUT')}</Text>
-                  )}
-                  {mintState.status === 'mintable' && !approved && (
+              <>
+                {(mintState.status === 'minted' || isHolding) && (
+                  <Box>
+                    <Text>{t('TITLE.MINTED')}</Text>
+                  </Box>
+                )}
+                {blockTimeStamp.salesStatus !== 1 && !isHolding && (
+                  <Box mt={{ base: 5 }}>
+                    <Heading size="md">
+                      {blockTimeStamp.salesStatus === 0 && (
+                        <Text>{t('TITLE.BEFORE_SALE')}</Text>
+                      )}
+                      {blockTimeStamp.salesStatus === 2 && (
+                        <Text>{t('TITLE.END_OF_SALE')}</Text>
+                      )}
+                    </Heading>
+                  </Box>
+                )}
+                {mintState.status === 'noMintable' && (
+                  <Text>{t('TITLE.NOT_MINTABLE')}</Text>
+                )}
+                {mintState.status === 'soldout' && (
+                  <Text>{t('TITLE.SOLD_OUT')}</Text>
+                )}
+                {blockTimeStamp.salesStatus === 1 &&
+                  mintState.status === 'mintable' &&
+                  !approved && (
                     <Box>
                       <Text textAlign="right" fontSize="lg" mt={1}>
                         {t('TITLE.MINTABLE')}
@@ -206,59 +210,45 @@ const MintTicket: React.FC<Props> = ({ id, item, imageOnly, ...props }) => {
                       </Approve>
                     </Box>
                   )}
-                  {mintState.status === 'mintable' &&
-                    !isHolding &&
-                    approved && (
-                      <>
-                        {approved ? (
-                          <Box>
-                            <Text textAlign="right" fontSize="lg" mt={1}>
-                              {t('TITLE.MINTABLE')}
-                            </Text>
-                            <Text
-                              textAlign="right"
-                              fontSize="2xl"
-                              fontWeight="bold"
-                            >
-                              <>
-                                {ethers.utils.formatEther(
-                                  item.price.toString()
-                                )}
-                                HENKAKU
-                              </>
-                            </Text>
-                            <Button
-                              width="100%"
-                              colorScheme="teal"
-                              mt={5}
-                              loadingText="minting..."
-                              isLoading={isMinting || (isSuccess && !minted)}
-                              onClick={mint}
-                            >
-                              {t('MINT')}
-                            </Button>
-                          </Box>
-                        ) : (
-                          <Box mt="2em">
-                            {/* TODO: <Approve /> が入ります */}
-                          </Box>
-                        )}
-                      </>
-                    )}
+                {blockTimeStamp.salesStatus === 1 &&
+                  mintState.status === 'mintable' &&
+                  !isHolding &&
+                  approved && (
+                    <Box>
+                      <Text textAlign="right" fontSize="lg" mt={1}>
+                        {t('TITLE.MINTABLE')}
+                      </Text>
+                      <Text textAlign="right" fontSize="2xl" fontWeight="bold">
+                        <>
+                          {ethers.utils.formatEther(item.price.toString())}
+                          HENKAKU
+                        </>
+                      </Text>
+                      <Button
+                        width="100%"
+                        colorScheme="teal"
+                        mt={5}
+                        loadingText="minting..."
+                        isLoading={isMinting || (isSuccess && !minted)}
+                        onClick={mint}
+                      >
+                        {t('MINT')}
+                      </Button>
+                    </Box>
+                  )}
 
-                  {item?.tokenURIJSON.encryptedFile &&
-                    item?.tokenURIJSON.encryptedSymmetricKey &&
-                    isHolding && (
-                      <SecretMessage
-                        encryptedFile={String(item.tokenURIJSON.encryptedFile)}
-                        encryptedSymmetricKey={
-                          item.tokenURIJSON.encryptedSymmetricKey
-                        }
-                        tokenId={id}
-                      />
-                    )}
-                </>
-              )}
+                {item?.tokenURIJSON.encryptedFile &&
+                  item?.tokenURIJSON.encryptedSymmetricKey &&
+                  isHolding && (
+                    <SecretMessage
+                      encryptedFile={String(item.tokenURIJSON.encryptedFile)}
+                      encryptedSymmetricKey={
+                        item.tokenURIJSON.encryptedSymmetricKey
+                      }
+                      tokenId={id}
+                    />
+                  )}
+              </>
               {item?.creator === address &&
                 item?.tokenURIJSON?.encryptedSymmetricKey && (
                   <Box mt="1">
@@ -271,6 +261,10 @@ const MintTicket: React.FC<Props> = ({ id, item, imageOnly, ...props }) => {
                   </Box>
                 )}
             </Box>
+
+            {isHolding && (
+              <ChatModal receiverAddress={item.creator.toString()} />
+            )}
           </GridItem>
         )}
       </Grid>
@@ -278,9 +272,3 @@ const MintTicket: React.FC<Props> = ({ id, item, imageOnly, ...props }) => {
   )
 }
 export default MintTicket
-
-interface PreviewTicketProps {
-  id: number
-  item: TicketInfoProps
-  children: ReactElement
-}

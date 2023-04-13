@@ -24,7 +24,7 @@ const mappingTicketInfo = async ({
   maxSupply,
   price,
   open_blockTimestamp,
-  close_blockTimestamp,
+  close_blockTimestamp
 }: Ticket.TicketInfoStructOutput) => {
   const pinataGatewayURI = parseIpfs2Pinata(uri)
   const tokenURIJSON = await fetchTokenURIJSON(pinataGatewayURI)
@@ -36,13 +36,13 @@ const mappingTicketInfo = async ({
     tokenURIJSON,
     price: Number(price),
     open_blockTimestamp: Number(open_blockTimestamp),
-    close_blockTimestamp: Number(close_blockTimestamp),
+    close_blockTimestamp: Number(close_blockTimestamp)
   } as TicketInfoProps
 }
 
 const fetchTokenURIJSON = async (uri: string) => {
   try {
-    const res = await fetch(uri)
+    const res = await fetch(`/api/ipfs?uri=${uri}`)
     const data = await res.json()
     return data
   } catch (error) {}
