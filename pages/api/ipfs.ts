@@ -15,7 +15,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return
     }
 
-    const { data } = await axios.get(req.query.uri.toString())
+    const { data } = await axios.get(req.query.uri.toString(), {
+      headers: {
+        Accept: 'text/plain'
+      }
+    })
 
     res.status(200).json(data)
   } catch (error) {

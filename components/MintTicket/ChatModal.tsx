@@ -23,11 +23,7 @@ const ChatInner: FC<{ receiverAddress: string; user: IUser }> = ({
   const { key } = useDecryptedPvtKey(user)
 
   return key ? (
-    <PushChat
-      user={user}
-      decryptedKey={key}
-      receiverAddress={receiverAddress}
-    />
+    <PushChat user={user} decryptedKey={key} chatId={receiverAddress} />
   ) : (
     <></>
   )
@@ -42,7 +38,7 @@ const ChatModal: FC<Props> = ({ receiverAddress }) => {
       {user ? (
         <>
           <Button width="full" colorScheme="teal" onClick={onOpen}>
-            主催者とのメッセージスレッド
+            主催者とのメッセージを開始
           </Button>
           <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
@@ -55,7 +51,9 @@ const ChatModal: FC<Props> = ({ receiverAddress }) => {
           </Modal>
         </>
       ) : (
-        <Button onClick={createUser}>Create User</Button>
+        <Button onClick={createUser} width="full">
+          主催者とチャットを始める
+        </Button>
       )}
     </>
   )

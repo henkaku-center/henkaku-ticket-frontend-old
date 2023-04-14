@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import * as push from '@pushprotocol/restapi'
 import { useAccount, useSigner } from 'wagmi'
 import { ENV } from '@pushprotocol/restapi/src/lib/constants'
+import { generateChatGroupName } from '@/utils/push-chat'
 
 const env = process.env.NODE_ENV === 'production' ? ENV.PROD : ENV.STAGING
 
@@ -54,7 +55,36 @@ export const useDecryptedPvtKey = (user: push.IUser | null) => {
   return { key }
 }
 
-export const useAllChats = (key: string) => {
+export const useCreateGroupChat = (key: string | null) => {
+  const { address } = useAccount()
+  const createGroupChat = useCallback(
+    (members: string[], groupName: string) => {
+      if (!key || !address) return
+      try {
+        const res = push.chat.createGroup({
+          groupName,
+          groupDescription: 'Henkaku Ticket　スレッド',
+          members,
+          groupImage: '',
+          admins: [],
+          isPublic: false,
+          account: address,
+          pgpPrivateKey: key,
+          env
+        })
+        return res
+      } catch (error) {
+        console.log(error)
+        return
+      }
+    },
+    [key, address]
+  )
+
+  return { createGroupChat }
+}
+
+export const useAllChats = (key: string | null) => {
   const { address } = useAccount()
 
   const [chats, setChats] = useState<push.IFeeds[]>()
@@ -81,7 +111,7 @@ export const useAllChats = (key: string) => {
   return { chats }
 }
 
-export const useChatHistory = (key: string, receiverAddress: string) => {
+export const useChatHistory = (key: string, receiverAddress?: string) => {
   const { address } = useAccount()
 
   const [chatHistory, setChatHistory] = useState<push.IMessageIPFS[]>()
@@ -131,7 +161,7 @@ export const useChatHistory = (key: string, receiverAddress: string) => {
   return { chatHistory, appendMessage }
 }
 
-export const useChatRequests = (user: push.IUser, key: string) => {
+export const useChatRequests = (user: push.IUser, key: string | null) => {
   const { address } = useAccount()
   const { data: signer } = useSigner()
 
@@ -157,12 +187,12 @@ export const useChatRequests = (user: push.IUser, key: string) => {
   }, [user, key])
 
   const approveRequest = useCallback(
-    async (receiverAddress: string) => {
+    async (chatId: string) => {
       if (!key || !signer) return
       try {
         const res = await push.chat.approve({
           account: address,
-          senderAddress: receiverAddress,
+          senderAddress: chatId,
           pgpPrivateKey: key,
           signer: signer as any,
           env
@@ -184,7 +214,7 @@ export const useSendChat = (user: push.IUser, key: string) => {
   const { data: signer } = useSigner()
 
   const sendChat = useCallback(
-    async (messageContent: string, receiverAddress: string) => {
+    async (messageContent: string, receiverAddress?: string) => {
       if (!signer || !key || !user) return
       try {
         const res = await push.chat.send({

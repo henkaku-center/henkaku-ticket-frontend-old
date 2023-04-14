@@ -18,14 +18,11 @@ type FormData = {
 type Props = {
   user: IUser
   decryptedKey: string
-  receiverAddress: string
+  chatId?: string
 }
 
-const PushChat: FC<Props> = ({ user, receiverAddress, decryptedKey }) => {
-  const { chatHistory, appendMessage } = useChatHistory(
-    decryptedKey,
-    receiverAddress
-  )
+const PushChat: FC<Props> = ({ user, chatId, decryptedKey }) => {
+  const { chatHistory, appendMessage } = useChatHistory(decryptedKey, chatId)
   const { sendChat } = useSendChat(user, decryptedKey)
   // const { approveRequest, chatRequests } = useChatRequests(user)
 
@@ -36,7 +33,7 @@ const PushChat: FC<Props> = ({ user, receiverAddress, decryptedKey }) => {
   const submit = async (data: FormData) => {
     if (formState.isSubmitting) return
     try {
-      const res = await sendChat(data.message, receiverAddress)
+      const res = await sendChat(data.message, chatId)
       if (!res) return
       appendMessage(res)
     } catch (error) {
