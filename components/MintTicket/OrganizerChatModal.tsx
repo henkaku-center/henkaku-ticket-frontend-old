@@ -36,13 +36,23 @@ const ChatInner: FC<{
     <>
       <Grid gridTemplateColumns="150px 1fr">
         <GridItem>
-          {chats?.map((chat) => (
-            <Box p={2} borderBottom="1px solid grey" mb={2}>
+          {chats?.map((chat, index) => (
+            <Box
+              p={2}
+              borderBottom="1px solid grey"
+              mb={2}
+              key={`chat${index}`}
+            >
               {chat.groupInformation?.groupName}
             </Box>
           ))}
-          {chatRequests?.map((request) => (
-            <Box p={2} borderBottom="1px solid grey" mb={2}>
+          {chatRequests?.map((request, index) => (
+            <Box
+              p={2}
+              borderBottom="1px solid grey"
+              mb={2}
+              key={`request${index}`}
+            >
               {request.groupInformation?.groupName}
             </Box>
           ))}
